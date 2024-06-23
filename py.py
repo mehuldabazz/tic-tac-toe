@@ -1,28 +1,41 @@
+import tkinter as tk
+from tkinter import messagebox
 import random
 
 class TicTacToe:
-    def __init__(self):
+    def __init__(self, root):
         self.board = [['-', '-', '-'],
                       ['-', '-', '-'],
                       ['-', '-', '-']]
         self.turn = 'X'
+        self.root = root
+        self.buttons = [[None for _ in range(3)] for _ in range(3)]
+        self.create_board()
 
-    def print_board(self):
-        for row in self.board:
-            print(' '.join(row))
+    def create_board(self):
+        for row in range(3):
+            for col in range(3):
+                button = tk.Button(self.root, text='-', font='normal 20 bold', height=2, width=5,
+                                   command=lambda row=row, col=col: self.make_move(row, col))
+                button.grid(row=row, column=col)
+                self.buttons[row][col] = button
 
     def make_move(self, row, col):
         if self.board[row][col] != '-':
-            return False
+            return
 
         self.board[row][col] = self.turn
+        self.buttons[row][col].config(text=self.turn)
 
         if self.check_winner():
-            return True
+            messagebox.showinfo("TicTacToe", f"{self.turn} wins!")
+            self.reset_board()
+            return
 
         self.turn = 'X' if self.turn == 'O' else 'O'
 
-        return True
+        if self.turn == 'O':
+            self.ai_move()
 
     def check_winner(self):
         for row in range(3):
@@ -42,29 +55,27 @@ class TicTacToe:
         return False
 
     def ai_move(self):
-        # TODO: Implement a better AI algorithm
         row = random.randint(0, 2)
         col = random.randint(0, 2)
 
-        while not self.make_move(row, col):
+        while self.board[row][col] != '-':
             row = random.randint(0, 2)
             col = random.randint(0, 2)
 
-    def play_game(self):
-        while not self.check_winner():
-            self.print_board()
+        self.make_move(row, col)
 
-            if self.turn == 'X':
-                row, col = input('Enter your move (row, col): ').split()
-                self.make_move(int(row), int(col))
-            else:
-                self.ai_move()
+    def reset_board(self):
+        self.board = [['-', '-', '-'],
+                      ['-', '-', '-'],
+                      ['-', '-', '-']]
+        self.turn = 'X'
+        for row in range(3):
+            for col in range(3):
+                self.buttons[row][col].config(text='-')
 
-        self.print_board()
-
-        winner = 'X' if self.turn == 'O' else 'O'
-        print(f'{winner} wins!')
 
 if __name__ == '__main__':
-    game = TicTacToe()
-    game.play_game()
+    root = tk.Tk()
+    root.title("TicTacToe")
+    game = TicTacToe(root)
+    root.mainloop()
